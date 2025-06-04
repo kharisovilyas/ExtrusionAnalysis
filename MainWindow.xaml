@@ -1,0 +1,340 @@
+﻿<!-- ExtrusionAnalysis.Views/MainWindow.xaml -->
+<Window x:Class="ExtrusionAnalysis.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:local="clr-namespace:ExtrusionAnalysis.Models"
+        xmlns:vm="clr-namespace:ExtrusionAnalysis.ViewModels"
+        mc:Ignorable="d"
+        Title="Extrusion Analysis" Height="800" Width="1400"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}">
+    <Window.Resources>
+        <!-- ObjectDataProvider для SectionType (Cut/Smooth) -->
+        <ObjectDataProvider x:Key="SectionTypeEnum" MethodName="GetValues" ObjectType="{x:Type local:SectionType}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:SectionType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <!-- ObjectDataProvider для ThreadDirection (Right/Left) -->
+        <ObjectDataProvider x:Key="ThreadDirectionEnum" MethodName="GetValues" ObjectType="{x:Type local:ThreadDirection}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:ThreadDirection"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <DockPanel Margin="10">
+        <!-- Боковая панель для ввода данных -->
+        <StackPanel Width="450" DockPanel.Dock="Left" Margin="0,0,10,0">
+            <TextBlock Text="Ввод данных" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Загрузить данные" Command="{Binding LoadDataCommand}" Margin="5" Width="130"/>
+                <Button Content="Сохранить данные" Command="{Binding SaveDataCommand}" Margin="5" Width="130"/>
+                <Button Content="Выполнить расчет" Command="{Binding CalculateCommand}" Margin="5" Width="130"/>
+            </StackPanel>
+            <Button Content="Сохранить результаты в CSV" Command="{Binding SaveResultsCommand}" Margin="5"/>
+
+            <TabControl Margin="0,10,0,0">
+                <!-- DATA.exe: Материал -->
+                <TabItem Header="Материал">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="5">
+                            <TextBlock Text="Индекс течения (n):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.FlowIndex, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Характерная темп. T0 (°C):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.CharacteristicTemperature, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Коэф. консистенции Mu0 (кПа·с^n):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.ConsistencyCoefficient, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Влияние темп. b (1/К):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.TemperatureViscosityInfluence, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Плотность Ro (кг/м³):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.Density, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Температуропроводность a (м²/с, ×10⁸):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.ThermalDiffusivity, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Теплопроводность Lam (Вт/(м·К)):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.HeatConductivity, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Темп. эквив. режима Teqv (°C):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.EquivalentTemperature, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Индукц. время t_in_eq (с):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.InductionTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Критич. время t_op_eq (с):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.OptimalTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Начальная темп. T_ini (°C):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding MaterialProperties.InitialTemperature, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- DATA.exe: Общие параметры -->
+                <TabItem Header="Общие параметры">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="5">
+                            <TextBlock Text="Частота вращ. N (об/мин):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.RotationFrequency, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Нач. темп. смеси T_start (°C):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.InitialMixtureTemperature, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Теплопров. корпуса Lam_bar (Вт/(м·К)):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.BarrelMaterialHeatConductivity, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Теплопров. винта Lam_scr (Вт/(м·К)):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.ScrewMaterialHeatConductivity, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Теплоотд. смесь-корпус Alpha_b (Вт/м²·К):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.MixtureToBarrelHeatTransferCoeff, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Теплоотд. смесь-винт Alpha_s (Вт/м²·К):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.MixtureToScrewHeatTransferCoeff, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Толщина стенки винта Delta_s (мм):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.ScrewWallThicknessMM, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Теплоотд. стенка-среда Al_med (Вт/м²·К):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.WallToMediumHeatTransferCoeff, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Темп. среды T_med (°C):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.MediumTemperatureInScrewCavity, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Темпер. пров. среды a_med (м²/с, ×10⁸):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.MediumThermalDiffusivityE8, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Теплопров. среды Lam_med (Вт/(м·К)):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.MediumHeatConductivity, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Расход среды Q_med (дм³/мин):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.MediumFlowRateDM3Min, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Число циклов интегр. n_Integ:" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.NumberOfIntegrationCycles, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Число шагов для рисования n_Graph:" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.NumberOfDrawingSteps, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- DATA.exe: Секции винта -->
+                <TabItem Header="Секции винта">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <DataGrid ItemsSource="{Binding ScrewSections}" AutoGenerateColumns="False" CanUserAddRows="True" Margin="5" MaxHeight="600">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                <DataGridTextColumn Header="№" Binding="{Binding Order}" Width="50"/>
+                                <DataGridTextColumn Header="Monolit" Binding="{Binding Monolit}" Width="60"/>
+                                <DataGridComboBoxColumn Header="Тип" SelectedValueBinding="{Binding Type}" ItemsSource="{Binding Source={StaticResource SectionTypeEnum}}" Width="80"/>
+                                <DataGridTextColumn Header="D_start (мм)" Binding="{Binding DStartMM}" Width="90"/>
+                                <DataGridTextColumn Header="D_final (мм)" Binding="{Binding DFinalMM}" Width="90"/>
+                                <DataGridTextColumn Header="L (мм)" Binding="{Binding LengthMM}" Width="70"/>
+                                <DataGridComboBoxColumn Header="Напр. резьбы" SelectedValueBinding="{Binding ThreadDirection}" ItemsSource="{Binding Source={StaticResource ThreadDirectionEnum}}" Width="100"/>
+                                <DataGridTextColumn Header="Число витков" Binding="{Binding NumberOfThreads}" Width="100"/>
+                                <DataGridTextColumn Header="Шаг резьбы (мм)" Binding="{Binding ThreadPitchMM}" Width="110"/>
+                                <DataGridTextColumn Header="H_start (мм)" Binding="{Binding HStartMM}" Width="90"/>
+                                <DataGridTextColumn Header="H_final (мм)" Binding="{Binding HFinalMM}" Width="90"/>
+                                <DataGridTextColumn Header="e_start (мм)" Binding="{Binding ThreadThicknessStartMM}" Width="90"/>
+                                <DataGridTextColumn Header="e_final (мм)" Binding="{Binding ThreadThicknessFinalMM}" Width="90"/>
+                                <DataGridTextColumn Header="delta (мм)" Binding="{Binding RadialClearanceMM}" Width="90"/>
+                                <DataGridTextColumn Header="Угол (°)" Binding="{Binding AngleDegrees}" Width="80"/>
+                                <DataGridTextColumn Header="W_cut (мм)" Binding="{Binding CutWidthMM}" Width="90"/>
+                                <DataGridTextColumn Header="Циклы интегр." Binding="{Binding IntegrationCycles}" Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- DATA.exe: Секции корпуса -->
+                <TabItem Header="Секции корпуса">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <DataGrid ItemsSource="{Binding BarrelSections}" AutoGenerateColumns="False" CanUserAddRows="True" Margin="5" MaxHeight="600">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                <DataGridTextColumn Header="L (мм)" Binding="{Binding LengthMM}" Width="100"/>
+                                <DataGridTextColumn Header="Delta (мм)" Binding="{Binding WallThicknessMM}" Width="100"/>
+                                <DataGridTextColumn Header="T (°C)" Binding="{Binding TemperatureC}" Width="100"/>
+                                <DataGridTextColumn Header="Al (Вт/м²·К)" Binding="{Binding HeatTransferCoefficientWM2K}" Width="120"/>
+                                <DataGridTextColumn Header="a (м²/с, ×10⁸)" Binding="{Binding ThermalDiffusivityM2S_E8}" Width="120"/>
+                                <DataGridTextColumn Header="Lam (Вт/м·К)" Binding="{Binding ThermalConductivityWMK}" Width="120"/>
+                                <DataGridTextColumn Header="Q (дм³/мин)" Binding="{Binding FlowRateDM3Min}" Width="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- DATA.exe: Кинетика вулканизации -->
+                <TabItem Header="Вулканизация">
+                    <StackPanel Margin="5">
+                        <TextBlock Text="Число интервалов:" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding KineticsParameters.NumberOfIntervals, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" Margin="0,0,0,10"/>
+                        <TextBlock Text="Интервалы вулканизации" Margin="0,10,0,5" FontWeight="Bold"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                            <DataGrid ItemsSource="{Binding KineticsParameters.Intervals}" AutoGenerateColumns="False" CanUserAddRows="True" Margin="0,0,0,0" MaxHeight="600">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="№" Binding="{Binding Order}" Width="50"/>
+                                    <DataGridTextColumn Header="t_eqv (с)" Binding="{Binding EquivalentTime}" Width="100"/>
+                                    <DataGridTextColumn Header="E/R (К)" Binding="{Binding ActivationEnergyOverR}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </ScrollViewer>
+                    </StackPanel>
+                </TabItem>
+
+                <!-- QPT.exe: Дополнительные параметры -->
+                <TabItem Header="QPT Доп. параметры">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="5">
+                            <TextBlock Text="Доля воздуха в 1-й секции (k_V_air, %):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.AirFractionAtFirstSectionPercent, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Минимальный относит. расход (Q_min/Q_b):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.MinimalRelativeExpenditure, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Максимальный относит. расход (Q_max/Q_b):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.MaximalRelativeExpenditure, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Число шагов по Q/Q_b (n_Step):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.NumberOfStepsByRelativeExpense, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ROUND.exe: Секции головки -->
+                <TabItem Header="Секции головки">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <DataGrid ItemsSource="{Binding HeadSections}" AutoGenerateColumns="False" CanUserAddRows="True" Margin="5" MaxHeight="600">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                <DataGridTextColumn Header="№" Binding="{Binding Order}" Width="50"/>
+                                <DataGridTextColumn Header="D_start (мм)" Binding="{Binding DStartMM}" Width="100"/>
+                                <DataGridTextColumn Header="D_final (мм)" Binding="{Binding DFinalMM}" Width="100"/>
+                                <DataGridTextColumn Header="L (мм)" Binding="{Binding LengthMM}" Width="100"/>
+                                <DataGridTextColumn Header="T_st (°C)" Binding="{Binding WallTemperatureC}" Width="120"/>
+                                <DataGridTextColumn Header="Циклы интегр." Binding="{Binding IntegrationCycles}" Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ROUND.exe: Дополнительные параметры -->
+                <TabItem Header="ROUND Доп. параметры">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="5">
+                            <TextBlock Text="Число слоев материала (N_Alpha):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.NumberOfMaterialSlicesInFlood, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Число шагов по r/R (N_r/R):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.NumberOfStepsByROverR, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Коэф. нерегулярн. (k1_Alph):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.IrregularityCoeffAlpha1, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Коэф. нерегулярн. (k2_Alph):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.IrregularityCoeffAlpha2, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Коэф. нерегулярн. (k1_r/R):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.IrregularityCoeffROverR1, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                            <TextBlock Text="Коэф. нерегулярн. (k2_r/R):" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding GeneralParameters.IrregularityCoeffROverR2, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+
+        <!-- Основная область для результатов -->
+        <TabControl VerticalAlignment="Stretch">
+            <TabItem Header="Результаты расчетов">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <!-- Результаты для винта (QPT) -->
+                        <TextBlock Text="Результаты для винта (QPT)" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="Выберите секцию винта: " VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <!-- ComboBox для выбора секции -->
+                            <ComboBox ItemsSource="{Binding ScrewSections}"
+                                      SelectedItem="{Binding SelectedScrewSection}"
+                                      DisplayMemberPath="Id"
+                                      Width="100" Margin="0,0,0,5"/>
+                        </StackPanel>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" MaxHeight="250">
+                            <DataGrid ItemsSource="{Binding FilteredScrewResults}" AutoGenerateColumns="False" IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                    <DataGridTextColumn Header="№ секции" Binding="{Binding SectionOrder}" Width="80"/>
+                                    <DataGridTextColumn Header="Z (мм)" Binding="{Binding PositionMM, StringFormat=F0}" Width="60"/>
+                                    <DataGridTextColumn Header="p (МПа)" Binding="{Binding PressureMPa, StringFormat=F2}" Width="70"/>
+                                    <DataGridTextColumn Header="T (°C)" Binding="{Binding TemperatureC, StringFormat=F1}" Width="70"/>
+                                    <DataGridTextColumn Header="T_in (°C)" Binding="{Binding BarrelTemperatureC, StringFormat=F1}" Width="70"/>
+                                    <DataGridTextColumn Header="T_out (°C)" Binding="{Binding ScrewTemperatureC, StringFormat=F1}" Width="70"/>
+                                    <DataGridTextColumn Header="H (мм)" Binding="{Binding ChannelHeightMM, StringFormat=F1}" Width="70"/>
+                                    <DataGridTextColumn Header="W (мм)" Binding="{Binding ChannelWidthMM, StringFormat=F1}" Width="70"/>
+                                    <DataGridTextColumn Header="Tau (кПа)" Binding="{Binding ShearStressKPa, StringFormat=F0}" Width="70"/>
+                                    <DataGridTextColumn Header="Ener_T (МДж/м³)" Binding="{Binding EnergyThermalMJm3, StringFormat=F0}" Width="120"/>
+                                    <DataGridTextColumn Header="Ener_M (МДж/м³)" Binding="{Binding EnergyMechanicalMJm3, StringFormat=F0}" Width="120"/>
+                                    <DataGridTextColumn Header="Q_del (см³/с)" Binding="{Binding FlowRateDeltaSM3S, StringFormat=F2}" Width="100"/>
+                                    <DataGridTextColumn Header="Shear def. add" Binding="{Binding ShearDeformationAdded, StringFormat=F1}" Width="120"/>
+                                    <DataGridTextColumn Header="Shear def. sum" Binding="{Binding ShearDeformationSummary, StringFormat=F1}" Width="120"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </ScrollViewer>
+                        <TextBlock Text="Итоговые значения (QPT)" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Text="Суммарная деформация сдвига: " Margin="0,0,10,0"/>
+                            <TextBlock Text="{Binding SummaryShearDeformation, StringFormat=F1}" />
+                        </StackPanel>
+
+
+                        <!-- Результаты для головки (ROUND) -->
+                        <TextBlock Text="Результаты для головки (ROUND)" FontWeight="Bold" Margin="0,10,0,5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="Выберите секцию головки: " VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <!-- ComboBox для выбора секции -->
+                            <ComboBox ItemsSource="{Binding HeadSections}"
+                                      SelectedItem="{Binding SelectedHeadSection}"
+                                      DisplayMemberPath="Id"
+                                      Width="100" Margin="0,0,0,5"/>
+                        </StackPanel>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" MaxHeight="100">
+                            <DataGrid ItemsSource="{Binding FilteredHeadResults}" AutoGenerateColumns="False" IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                    <DataGridTextColumn Header="Q (см³/с)" Binding="{Binding VolumeExpenseSM3S, StringFormat=F2}" Width="80"/>
+                                    <DataGridTextColumn Header="p (МПа)" Binding="{Binding SpecificPressureNearHeadMPa, StringFormat=F2}" Width="80"/>
+                                    <DataGridTextColumn Header="T_in (°C)" Binding="{Binding TemperatureMaterialEnteringHeadC, StringFormat=F1}" Width="80"/>
+                                    <DataGridTextColumn Header="T_out (°C)" Binding="{Binding TemperatureMaterialAfterExtrusionC, StringFormat=F1}" Width="80"/>
+                                    <DataGridTextColumn Header="v (м/мин)" Binding="{Binding VelocityMMin, StringFormat=F1}" Width="80"/>
+                                    <DataGridTextColumn Header="S (см²)" Binding="{Binding CrossSectionAreaCM2, StringFormat=F2}" Width="80"/>
+                                    <DataGridTextColumn Header="Induct. screw (%)" Binding="{Binding PartInductionPeriodScrewPercent, StringFormat=F1}" Width="120"/>
+                                    <DataGridTextColumn Header="Add. induct. head (%)" Binding="{Binding AdditionalPartInductionPeriodHeadPercent, StringFormat=F1}" Width="140"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </ScrollViewer>
+                        <TextBlock Text="Итоговые значения (ROUND)" FontWeight="Bold" Margin="0,10,0,5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Text="Макс. давление (МПа): " Margin="0,0,10,0"/>
+                            <TextBlock Text="{Binding MaxPressure, StringFormat=F3}" />
+                            <TextBlock Text="Конечная темп. (°C): " Margin="20,0,10,0"/>
+                            <TextBlock Text="{Binding FinalTemperature, StringFormat=F3}" />
+                            <TextBlock Text="Конечный расход (см³/с): " Margin="20,0,10,0"/>
+                            <TextBlock Text="{Binding FinalFlowRate, StringFormat=F3}" />
+                            <TextBlock Text="Удельн. давление (МПа): " Margin="20,0,10,0"/>
+                            <TextBlock Text="{Binding FinalPressureHead, StringFormat=F3}" />
+                        </StackPanel>
+
+                        <!-- Графики -->
+                        <TextBlock Text="Графики" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TabControl VerticalAlignment="Stretch">
+                            <TabItem Header="Давление (QPT)">
+                                <oxy:PlotView Model="{Binding PressurePlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                            <TabItem Header="Температура (QPT)">
+                                <oxy:PlotView Model="{Binding TemperaturePlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                            <TabItem Header="Характеристика винта">
+                                <oxy:PlotView Model="{Binding PressureFlowPlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                            <TabItem Header="Давление от расхода (головка)">
+                                <oxy:PlotView Model="{Binding PressureVsFlowPlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                            <TabItem Header="Температура от расхода (головка)">
+                                <oxy:PlotView Model="{Binding TemperatureVsFlowPlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                            <TabItem Header="Темп. по радиусу">
+                                <oxy:PlotView Model="{Binding RadialTemperaturePlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                            <TabItem Header="Вязкость по радиусу">
+                                <oxy:PlotView Model="{Binding RadialViscosityPlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                            <TabItem Header="Вулк. по радиусу">
+                                <oxy:PlotView Model="{Binding RadialVulcanizationPlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                            <TabItem Header="Время экв. по радиусу">
+                                <oxy:PlotView Model="{Binding RadialTimeEqPlotModel}" Height="800" VerticalAlignment="Stretch" Margin="0"/>
+                            </TabItem>
+                        </TabControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
